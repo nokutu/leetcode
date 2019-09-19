@@ -1,24 +1,38 @@
 class Solution:
-    def isMatch(self, s: str, p: str) -> bool:
-        if len(s) == 0 or len(p) == 0:
-            while len(p) > 1 and p[1] == '*':
-                p = p[2:]
-            return len(s) == 0 and len(p) == 0
+    def isMatch(self, text: str, expr: str) -> bool:
+        len_text = len(text)
+        len_expr = len(expr)
 
-        c = s[0]
-        match = p[0]
-        star = len(p) > 1 and p[1] == '*'
+        cache = {}
+        
+        def f(i: int, j: int):
+            if (i, j) in cache:
+                return cache[i, j]
 
-        if star:
-            if match != '.' and match != c:
-                return self.isMatch(s, p[2:])
+            if len_text == i or len_expr == j:
+                while len_expr > j + 1 and expr[j+1] == '*':
+                    j += 2
+                
+                ret = len_text == i and len_expr == j
             else:
-                return self.isMatch(s[1:], p) or self.isMatch(s, p[2:])
-        else:
-            if match != '.' and match != c:
-                return False
-            else:
-                return self.isMatch(s[1:], p[1:])
+                c = text[i]
+                match = expr[j]
+                star = len_expr > j + 1 and expr[j+1] == '*'
+
+                if star:
+                    if match != '.' and match != c:
+                        ret = f(i, j+2)
+                    else:
+                        ret = f(i+1, j) or f(i, j+2)
+                else:
+                    if match != '.' and match != c:
+                        ret = False
+                    else:
+                        ret = f(i+1, j+1)
+            cache[(i, j)] = ret
+            return ret
+
+        return f(0, 0)
         
 
-print(Solution().isMatch("aa", ".*ab*"))
+print(Solution().isMatch("aa", "a.*b"))
